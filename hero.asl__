@@ -1,0 +1,76 @@
+//STUDENT NAME: Islam Mostafa
+//STUDENT ID: 200050703
+
+//Hero is at the position of agent P (variable), if agent P's position 
+// is identical to Hero's position 
+at(P) :- pos(P, X, Y) & pos(hero, X, Y).
+
+// Initialize the slots checking.
+!check(slots).
+
+// Plan to check slots if the hero is not at (7,7).
++!check(slots) : not pos(hero, 7,7)
+	<- next(slot); // Calling the nextSlot method from the environment to move the forest!
+!check(slots).
+
++!check(slots): pos(hero, X,Y) & pos(TELEPORTER, X,Y)
+<- !backOnTrack.
+
++!backOnTrack : true
+<-	?pos(hero, X,Y);
+	-+pos(last, X,Y);
+//	setAgPos(0, 6,1);
+	move_towards(TELEPORTERX, _, _);
+	next(slot).
+
+// Plan to check slots if the hero is at (7,7) 
+//and carries any of the items (vase, coin, gem).
++!check(slots) : pos(hero, 7,7) & hero(vase) | hero(gem) | hero(coin)
+	<- next(slot);
+	 !take(vase,goblin);
+	 !take(coin,goblin);
+	 !take(gem,goblin).
+
+// If there is no vase, coin or gem a print statment message to advise that!
+-!check(slots) 
+	<- .print (" All done, I did not find any vase, coin, or gem.").
+
+// Define belives for the hero carrying items.
++vase(hero): true <- pick(vase).
++coin(hero): true <- pick(coin).
++gem(hero): true <- pick(gem).
+
+// Plan to check slots if the hero carries all three
+//items (vase, coin, gem) and is at (7,7).
++!check(slots) :vase(hero) & coin(hero) & gem(hero)& pos(hero, 7,7) 
+	<- !carry_to(goblin).
+
+// Plan to carry items to the goblin.
++!carry_to(goblin)
+	<- ?pos(hero,X,Y);  // Get the hero's current position.
+	 -+pos(last,X,Y); 	// Store the last position.
+	!take(vase,goblin); // Deliver vase to the goblin.
+	!at(last); 			// Move back to the last position.
+	!!check(slots).		// Re-check slots.
+
+	
+// Plan to take any item and drop it, while G
+// in uppercase is a  variable to be replaced by any item.
++!take(G,P) : true
+   <- !ensure_pick(G);
+      !at(P);
+	  drop(G). 
+
+// Plan to ensure picking up all three items (vase, coin, gem) if present!
++!ensure_pick(G) : vase(hero) & coin(hero) & gem(hero)
+   <- pick(vase); pick(coin); pick(gem);
+      !ensure_pick(G).
++!ensure_pick(_). // This clause provides a way to ensure_pick items if not it will clear the ensure_pick plan.
+
+
+// If we are at P then the goal is achieved
++!at(P) : at(P).
+// Otherwise to be at P we move towards it and hen we will achieve our goal to be at(P).
++!at(P) <- ?pos(P,X,Y);
+           move_towards(X,Y); //// Calling the moveTowards method from the environment to move towards the location stated
+           !at(P).
