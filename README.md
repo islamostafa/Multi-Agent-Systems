@@ -48,5 +48,6 @@ For data protection reasons, the backend code for the Forest environment is not 
 
 ## Assessment
 - Well-commented code to demonstrate understanding
+- Functionality of the HERO!
 
 
